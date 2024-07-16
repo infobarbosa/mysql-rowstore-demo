@@ -1,10 +1,24 @@
-# Rowstore
+# MySQL Rowstore
 Author: Prof. Barbosa<br>
 Contact: infobarbosa@gmail.com<br>
 Github: [infobarbosa](https://github.com/infobarbosa)
 
 ## Objetivo
-Avaliar de forma rudimentar o comportamento do modelo de linha.
+Avaliar de forma rudimentar o comportamento do modelo de armazenamento baseado em linha.<br>
+Para isso faremos uso do MySQL pela sua simplicidade e praticidade.
+
+## Ambiente 
+Este laborarório pode ser executado em qualquer estação de trabalho.<br>
+Recomendo, porém, a execução em Linux.<br>
+Caso você não tenha um à sua disposição, há duas opções:
+1. AWS Cloud9: siga essas [instruções](Cloud9/README.md).
+2. Killercoda: disponibiilizei o lab [aqui](https://killercoda.com/infobarbosa/scenario/mysql)
+
+## Setup
+Para começar, faça o clone deste repositório:
+```
+https://github.com/infobarbosa/mysql-rowstore-demo.git
+```
 
 >### Atenção! 
 > Os comandos desse tutorial presumem que você está no diretório raiz do projeto.
