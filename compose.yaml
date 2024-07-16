@@ -14,5 +14,3 @@ services:
     volumes:
       - './server/mysql/etc/my.cnf:/etc/my.cnf'
 #      - './server/mysql/data:/var/lib/mysql'
-#      - './server/mysql/sql:/docker-entrypoint-initdb.d'
-#      - './server/mysql/logs:/var/log/mysql'
