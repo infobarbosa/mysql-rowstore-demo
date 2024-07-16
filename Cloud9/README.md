@@ -6,7 +6,9 @@ Github: [infobarbosa](https://github.com/infobarbosa)
 
 Neste laboratório faremos uso recorrente do serviço Cloud9.
 
-### 1. Verifique a região no topo à direita do console AWS, normalmente é **Norte da Virgínia**.<br>
+### 1. Região AWS
+
+Verifique a região no topo à direita do console AWS, normalmente é **Norte da Virgínia**.<br>
 **Não** altere essa configuração!
 <div align="left">
 
