@@ -245,7 +245,7 @@ cat /var/lib/mysql/ecommerce/cliente.ibd
 
 > Perceba que o update praticamente não alterou o layout do arquivo.
 
-![img/delete-marivalda.png](img/delete-marivalda.png)
+![img/update-1-marivalda-short.png](img/update-1-marivalda-short.png)
 
 ```
 mysql -u root -e \
@@ -262,5 +262,7 @@ cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 > Perceba agora que, em razão do tamanho do nome, o banco de dados realocou o registro para um novo bloco (ou, possivelmente, outra posição no mesmo bloco)
+
+![img/update-2-marivalda-long.png](img/update-2-marivalda-long.png)
 
 ## Parabéns!
