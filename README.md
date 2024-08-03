@@ -181,7 +181,19 @@ mysql -u root -e \
 
 Output esperado:
 ```
-
++------+-------------+---------------------------+
+| id   | cpf         | nome                      |
++------+-------------+---------------------------+
+|   10 | 11111111111 | marcelo barbosa           |
+|   11 | 22222222222 | Juscelino Kubitschek      |
+| 1001 | 98753936060 | MARIVALDA KANAMARY        |
+| 1002 | 12455426050 | JUCILENE MOREIRA CRUZ     |
+| 1003 | 32487300051 | GRACIMAR BRASIL GUERRA    |
+| 1004 | 59813133074 | ALDENORA VIANA MOREIRA    |
+| 1005 | 79739952003 | VERA LUCIA RODRIGUES SENA |
+| 1006 | 66142806000 | IVONE GLAUCIA VIANA DUTRA |
+| 1007 | 19052330000 | LUCILIA ROSA LIMA PEREIRA |
++------+-------------+---------------------------+
 ```
 
 Faça o flush novamente e verifique o arquivo:
@@ -194,11 +206,8 @@ mysql -u root -e \
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
-Output:
-```
-
-```
-
+Output esperado:
+![alt text](image.png)
 
 ### 5. Delete
 ```
