@@ -61,41 +61,27 @@ Para verificar se está tudo correto:
 docker compose logs -f
 ```
 
-## Diretório de dados
-Perceba que após a inicialização serão criados alguns novos diretórios abaixo da pasta `./server/mysql/`
+### Acesso ao docker
+Para acessar o docker via terminal:
 ```
-ls -la ./server/mysql/
+docker exec -it mysql8 /bin/bash
 ```
 
 Output esperado:
 ```
-barbosa@brubeck:~/labs/mysql8$ ls -la ./server/mysql/
-total 24
-drwxr-xr-x 6 barbosa barbosa 4096 jul 16 14:51 .
-drwxr-xr-x 3 barbosa barbosa 4096 jul 15 19:48 ..
-drwxr-xr-x 9     999 root    4096 jul 16 14:52 data
-drwxr-xr-x 2 barbosa barbosa 4096 jul 15 19:48 etc
-drwxr-xr-x 2 root    root    4096 jul 16 14:51 logs
-drwxr-xr-x 2 root    root    4096 jul 16 14:51 sql
-barbosa@brubeck:~/labs/mysql8$
 ```
-
-O diretório `./server/mysql/data` representa o diretório `/var/lib/mysql/`.<br>
-O objetivo aqui é facilitar a inspeção dos arquivos de dados durante o laboratório.
 
 ## A base de dados
 
 ### Database `ecommerce`
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "CREATE DATABASE IF NOT EXISTS ecommerce;"
 ```
 
 ### Tabela `cliente`
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "CREATE TABLE ecommerce.cliente(
         id int PRIMARY KEY,
         cpf text,
@@ -105,8 +91,7 @@ docker exec -it mysql8 \
 
 Verificando se deu certo
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "DESCRIBE ecommerce.cliente;"
 ```
 
@@ -119,17 +104,15 @@ Output esperado:
 
 ### 1. 1o. Insert
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "INSERT INTO ecommerce.cliente(id, cpf, nome)
-     VALUES (10, '11111111111', 'marcelo barbosa');"
+    VALUES (10, '11111111111', 'marcelo barbosa');"
 
 ```
 
 Verificando:
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "SELECT * FROM ecommerce.cliente;"
 ```
 
@@ -142,15 +125,13 @@ Output:
 
 Vamos forçar o flush dos dados da memória para o disco de forma a verificar o arquivo de dados.
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 Verificando o conteúdo do arquivo `cliente.ibd`
 ```
-docker exec -it mysql8 \
-    cat /var/lib/mysql/ecommerce/cliente.ibd
+cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 Output:
@@ -160,22 +141,19 @@ Output:
 
 ### 3. 2o. Insert
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
    "INSERT INTO ecommerce.cliente(id, cpf, nome)
     VALUES (11, '22222222222', 'Juscelino Kubitschek');"
 ```
 
 Faça o flush novamente e verifique o arquivo:
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 ```
-docker exec -it mysql8 \
-    cat /var/lib/mysql/ecommerce/cliente.ibd
+cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 Output:
@@ -185,8 +163,7 @@ Output:
 
 ### 4. Insert em lote
 ```
-docker exec -it mysql8 \
-    mysql -u root -Bse \
+mysql -u root -Bse \
     "INSERT INTO ecommerce.cliente (id, cpf, nome) VALUES (1001, '98753936060', 'MARIVALDA KANAMARY');
     INSERT INTO ecommerce.cliente (id, cpf, nome) VALUES (1002, '12455426050', 'JUCILENE MOREIRA CRUZ');
     INSERT INTO ecommerce.cliente (id, cpf, nome) VALUES (1003, '32487300051', 'GRACIMAR BRASIL GUERRA');
@@ -198,8 +175,7 @@ docker exec -it mysql8 \
 
 Verificando se os inserts ocorreram como esperado:
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "SELECT * FROM ecommerce.cliente;"
 ```
 
@@ -210,14 +186,12 @@ Output esperado:
 
 Faça o flush novamente e verifique o arquivo:
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 ```
-docker exec -it mysql8 \
-    cat /var/lib/mysql/ecommerce/cliente.ibd
+cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 Output:
@@ -228,63 +202,54 @@ Output:
 
 ### 5. Delete
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "DELETE FROM ecommerce.cliente WHERE id = 11;"
 ```
 
 Faça o flush novamente e verifique o arquivo:
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 ```
-docker exec -it mysql8 \
-    cat /var/lib/mysql/ecommerce/cliente.ibd
+cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 > Perceba o espaço vazio entre o registro `marcelo` e `MARIVALDA`.
 
 ### 6. Update
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "UPDATE ecommerce.cliente SET nome='MARI K.' WHERE id = 1001"
 
 ```
 
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 ```
-docker exec -it mysql8 \
-    cat /var/lib/mysql/ecommerce/cliente.ibd
+cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 > Perceba que o update praticamente não alterou o layout do arquivo.
 
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "UPDATE ecommerce.cliente SET nome='MARIVALDA DE ALCÂNTARA FRANCISCO ANTÔNIO JOÃO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÉ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÇA E BOURBON KANAMARY' WHERE id = 1001;"
 ```
 
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
+mysql -u root -e \
     "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 ```
-docker exec -it mysql8 \
-    cat /var/lib/mysql/ecommerce/cliente.ibd
+cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 > Perceba agora que, em razão do tamanho do nome, o banco de dados realocou o registro para um novo bloco (ou, possivelmente, outra posição no mesmo bloco)
 
-## Parabéns
+## Parabéns!
