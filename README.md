@@ -17,7 +17,7 @@ Caso você não tenha um à sua disposição, há duas opções:
 ## Setup
 Para começar, faça o clone deste repositório:
 ```
-https://github.com/infobarbosa/mysql-rowstore-demo.git
+git clone https://github.com/infobarbosa/mysql-rowstore-demo.git
 ```
 
 >### Atenção! 
