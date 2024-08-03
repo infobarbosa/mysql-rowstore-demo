@@ -245,6 +245,8 @@ cat /var/lib/mysql/ecommerce/cliente.ibd
 
 > Perceba que o update praticamente não alterou o layout do arquivo.
 
+![img/delete-marivalda.png](img/delete-marivalda.png)
+
 ```
 mysql -u root -e \
     "UPDATE ecommerce.cliente SET nome='MARIVALDA DE ALCÂNTARA FRANCISCO ANTÔNIO JOÃO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÉ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÇA E BOURBON KANAMARY' WHERE id = 1001;"
