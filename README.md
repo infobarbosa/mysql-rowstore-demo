@@ -206,8 +206,8 @@ mysql -u root -e \
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
-Output esperado:
-![img/output-cliente.ibd.png](output-cliente.ibd.png)
+Output esperado:<br>
+![img/output-cliente.ibd.png](img/output-cliente.ibd.png)
 
 ### 5. Delete
 ```
