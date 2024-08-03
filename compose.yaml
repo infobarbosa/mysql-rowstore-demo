@@ -10,7 +10,6 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
       MYSQL_PWD: ""
     ports:
-      - '3306:3306'
+      - '33306:3306'
     volumes:
       - './server/mysql/etc/my.cnf:/etc/my.cnf'
-#      - './server/mysql/data:/var/lib/mysql'
