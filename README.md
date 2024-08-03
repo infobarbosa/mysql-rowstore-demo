@@ -207,7 +207,7 @@ cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
 Output esperado:
-![alt text](image.png)
+![img/output-cliente.ibd.png](output-cliente.ibd.png)
 
 ### 5. Delete
 ```
