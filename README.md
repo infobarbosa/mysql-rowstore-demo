@@ -241,8 +241,6 @@ mysql -u root -e \
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
-> Perceba o espaço vazio entre o registro `marcelo` e `MARIVALDA`.
-
 ### 6. Update
 ```
 mysql -u root -e \
