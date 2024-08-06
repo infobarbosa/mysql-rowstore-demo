@@ -127,7 +127,14 @@ mysql -u root -e \
 
 Output:
 ```
-
+bash-5.1# mysql -u root -e \
+>     "SELECT * FROM ecommerce.cliente;"
++----+-------------+-----------------+
+| id | cpf         | nome            |
++----+-------------+-----------------+
+| 10 | 11111111111 | marcelo barbosa |
++----+-------------+-----------------+
+bash-5.1# 
 ```
 
 ### 2. FLUSH TABLES
