@@ -97,7 +97,16 @@ mysql -u root -e \
 
 Output esperado:
 ```
-
+bash-5.1# mysql -u root -e \
+>     "DESCRIBE ecommerce.cliente;"
++-------+------+------+-----+---------+-------+
+| Field | Type | Null | Key | Default | Extra |
++-------+------+------+-----+---------+-------+
+| id    | int  | NO   | PRI | NULL    |       |
+| cpf   | text | YES  |     | NULL    |       |
+| nome  | text | YES  |     | NULL    |       |
++-------+------+------+-----+---------+-------+
+bash-5.1# 
 ```
 
 ## Operações em linhas (ou registros)
