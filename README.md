@@ -776,9 +776,7 @@ root@428066f4c64c:/#
 
 Você concluiu com sucesso o laboratório de armazenamento em linha com MySQL! 🎉
 
-Espero que este exercício tenha proporcionado uma compreensão prática sobre o funcionamento do modelo de armazenamento baseado em linha e como o MySQL gerencia os dados. Continue explorando e aprendendo mais sobre bancos de dados e suas diversas funcionalidades.
-
-Bom trabalho e continue se dedicando aos estudos!
+Espero que este exercício tenha proporcionado uma compreensão prática sobre o funcionamento do modelo de armazenamento baseado em linha e como o MySQL gerencia os dados. 
 
 ## Flush
 
