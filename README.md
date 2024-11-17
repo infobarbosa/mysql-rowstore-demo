@@ -182,6 +182,23 @@ mysql -u root -e \
 VALUES (11, '22222222222', 'Juscelino Kubitschek');"
 ```
 
+Checando:
+```
+mysql -u root -e \
+"SELECT * FROM ecommerce.cliente;"
+```
+
+Output:
+```
+"SELECT * FROM ecommerce.cliente;"
++----+-------------+----------------------+
+| id | cpf         | nome                 |
++----+-------------+----------------------+
+| 10 | 11111111111 | marcelo barbosa      |
+| 11 | 22222222222 | Juscelino Kubitschek |
++----+-------------+----------------------+
+```
+
 Verificando o arquivo de dados:
 
 ##### `cat`
@@ -390,6 +407,14 @@ mysql -u root -e \
 "DELETE FROM ecommerce.cliente WHERE id = 11;"
 ```
 
+Checando:
+```
+```
+
+Output:
+```
+```
+
 ##### `cat`
 ```
 cat /var/lib/mysql/ecommerce/cliente.ibd
@@ -497,9 +522,6 @@ root@428066f4c64c:/# grep --text Juscelino /var/lib/mysql/ecommerce/cliente.ibd
 19052330000LUCILIA ROSA LIMA PEREIRApZc:�ɛ8p�                                                                                                         P�(��	)�
 root@428066f4c64c:/#
 ```
-
-
-> Perceba o espaço vazio entre o registro `marcelo` e `MARIVALDA`.
 
 ### 6. Update
 ```
