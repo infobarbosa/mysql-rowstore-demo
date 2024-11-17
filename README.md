@@ -313,9 +313,8 @@ Output:
 
 ### 6. Update
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
-    "UPDATE ecommerce.cliente SET nome='MARI K.' WHERE id = 1001"
+mysql -u root -e \
+"UPDATE ecommerce.cliente SET nome='MARI K.' WHERE id = 1001"
 
 ```
 
@@ -350,9 +349,8 @@ Output:
 
 ### 2o. update
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
-    "UPDATE ecommerce.cliente SET nome='MARIVALDA DE ALCÂNTARA FRANCISCO ANTÔNIO JOÃO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÉ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÇA E BOURBON KANAMARY' WHERE id = 1001;"
+mysql -u root -e \
+"UPDATE ecommerce.cliente SET nome='MARIVALDA DE ALCÂNTARA FRANCISCO ANTÔNIO JOÃO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÉ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÇA E BOURBON KANAMARY' WHERE id = 1001;"
 ```
 
 ##### `cat`
@@ -397,9 +395,8 @@ Bom trabalho e continue se dedicando aos estudos!
 
 Caso necessário, é possível forçar o flush dos dados da memória para o disco de forma a verificar o arquivo de dados.
 ```
-docker exec -it mysql8 \
-    mysql -u root -e \
-    "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
+mysql -u root -e \
+"FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
 ## Configurações
