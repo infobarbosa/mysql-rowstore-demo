@@ -409,10 +409,24 @@ mysql -u root -e \
 
 Checando:
 ```
+mysql -u root -e "SELECT * FROM ecommerce.cliente;"
 ```
 
 Output:
 ```
+root@83b236affb4d:/# mysql -u root -e "SELECT * FROM ecommerce.cliente;"
++------+-------------+---------------------------+
+| id   | cpf         | nome                      |
++------+-------------+---------------------------+
+|   10 | 11111111111 | marcelo barbosa           |
+| 1001 | 98753936060 | MARIVALDA KANAMARY        |
+| 1002 | 12455426050 | JUCILENE MOREIRA CRUZ     |
+| 1003 | 32487300051 | GRACIMAR BRASIL GUERRA    |
+| 1004 | 59813133074 | ALDENORA VIANA MOREIRA    |
+| 1005 | 79739952003 | VERA LUCIA RODRIGUES SENA |
+| 1006 | 66142806000 | IVONE GLAUCIA VIANA DUTRA |
+| 1007 | 19052330000 | LUCILIA ROSA LIMA PEREIRA |
++------+-------------+---------------------------+
 ```
 
 ##### `cat`
