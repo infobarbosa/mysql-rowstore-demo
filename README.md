@@ -1,4 +1,4 @@
-# MySQL Rowstore
+# MySQL - Rowstore Demo
 Author: Prof. Barbosa<br>
 Contact: infobarbosa@gmail.com<br>
 Github: [infobarbosa](https://github.com/infobarbosa)
