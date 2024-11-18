@@ -2,5 +2,4 @@ services:
   mysql:
     container_name: mysql-demo
     image: infobarbosa/mysql:latest
-    ports:
-      - '3306:3306'
+
