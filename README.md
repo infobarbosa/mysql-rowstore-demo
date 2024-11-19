@@ -23,6 +23,11 @@ git clone https://github.com/infobarbosa/mysql-rowstore-demo.git
 >### Atenção! 
 > Os comandos desse tutorial presumem que você está no diretório raiz do projeto.
 
+```
+cd mysql-rowstore-demo
+
+```
+
 ## Docker
 Por simplicidade, vamos utilizar o MySQL em um container baseado em *Docker*.<br>
 Na raiz do projeto está disponível um arquivo `compose.yaml` que contém os parâmetros de inicialização do container Docker.<br>
