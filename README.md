@@ -10,7 +10,7 @@ Para isso faremos uso do MySQL pela sua simplicidade e praticidade.
 ## Ambiente 
 Este laborarório pode ser executado em qualquer estação de trabalho com docker disponível.<br>
 Recomendo, porém, a execução em Linux.<br>
-Caso você não tenha um à sua disposição, utilize o serviço **AWS Cloud9**. As instruções podem ser encontradas[aqui](https://github.com/infobarbosa/data-engineering-cloud9).
+Caso você não tenha um à sua disposição, utilize o serviço **AWS Cloud9**. As instruções podem ser encontradas [aqui](https://github.com/infobarbosa/data-engineering-cloud9).
 
 ## Setup
 Para começar, faça o clone deste repositório:
