@@ -8,7 +8,7 @@ Avaliar de forma rudimentar o comportamento do modelo de armazenamento baseado e
 Para isso faremos uso do MySQL pela sua simplicidade e praticidade.
 
 ## Ambiente 
-Este laborarório pode ser executado em qualquer estação de trabalho com docker disponível.<br>
+Este laboratório pode ser executado em qualquer estação de trabalho com docker disponível.<br>
 Recomendo, porém, a execução em Linux.<br>
 Caso você não tenha um à sua disposição, utilize o serviço **AWS Cloud9**. As instruções podem ser encontradas [aqui](https://github.com/infobarbosa/data-engineering-cloud9).
 
@@ -37,7 +37,7 @@ ls -la compose.yaml
 
 Output esperado:
 ```
-barbosa@brubeck:~/labs/mysql8$ ls -la compose.yaml
+barbosa@brubeck:~/labs/mysql-rowstore-demo$ ls -la compose.yaml
 -rw-r--r-- 1 barbosa barbosa 589 jul 16 14:48 compose.yaml
 ```
 
@@ -143,7 +143,10 @@ Output:
 	D��11111111111marcelo barbosapc����8Хroot@31d82768e370:/#
 ```
 
-Agora via utilitario `hexdump`:
+Agora via utilitário `hexdump`:
+
+> O utilitário `hexdump` exibe o conteúdo do arquivo em formato hexadecimal. Na coluna da direita, é possível visualizar os dados legíveis (ASCII). Observe como os campos `cpf` e `nome` aparecem **lado a lado**, sem separadores — essa é a essência do armazenamento em linha.
+
 ```
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
 
@@ -193,7 +196,6 @@ mysql -u root -e \
 
 Output:
 ```
-"SELECT * FROM ecommerce.cliente;"
 +----+-------------+----------------------+
 | id | cpf         | nome                 |
 +----+-------------+----------------------+
@@ -387,7 +389,6 @@ grep --text MARIVALDA /var/lib/mysql/ecommerce/cliente.ibd
 
 Output:
 ```
-root@428066f4c64c:/# grep --text MARIVALDA /var/lib/mysql/ecommerce/cliente.ibd
 	�11111111111marcelo barbosa
                                    8�
 22222222222Juscelino Kubitschek      	�
@@ -417,7 +418,6 @@ mysql -u root -e "SELECT * FROM ecommerce.cliente;"
 
 Output:
 ```
-root@83b236affb4d:/# mysql -u root -e "SELECT * FROM ecommerce.cliente;"
 +------+-------------+---------------------------+
 | id   | cpf         | nome                      |
 +------+-------------+---------------------------+
@@ -524,7 +524,6 @@ grep --text Juscelino /var/lib/mysql/ecommerce/cliente.ibd
 
 Output:
 ```
-root@428066f4c64c:/# grep --text Juscelino /var/lib/mysql/ecommerce/cliente.ibd
 	�11111111111marcelo barbosa
                                     �
                                      	. Q22222222222Juscelino Kubitschek
@@ -537,8 +536,9 @@ root@428066f4c64c:/# grep --text Juscelino /var/lib/mysql/ecommerce/cliente.ibd
                                                                   79739952003VERA LUCIA RODRIGUES SENA
                                                                                                       H=��	(�66142806000IVONE GLAUCIA VIANA DUTRA
 19052330000LUCILIA ROSA LIMA PEREIRApZc:�ɛ8p�                                                                                                         P�(��	)�
-root@428066f4c64c:/#
 ```
+
+> Perceba que, embora o registro tenha sido removido logicamente (não aparece mais no SELECT), os dados de "Juscelino Kubitschek" **ainda estão presentes no arquivo físico**. O MySQL marca o espaço como disponível para reutilização, mas não apaga imediatamente os bytes do disco.
 
 ### 6. Update
 ```
@@ -549,14 +549,13 @@ mysql -u root -e \
 
 Checando:
 ```
-mysql -e \
+mysql -u root -e \
 "SELECT * FROM ecommerce.cliente WHERE id = 1001"
 
 ```
 
 Output:
 ```
-"SELECT * FROM ecommerce.cliente WHERE id = 1001"
 +------+-------------+---------+
 | id   | cpf         | nome    |
 +------+-------------+---------+
@@ -613,7 +612,6 @@ grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 
 Output:
 ```
-root@428066f4c64c:/# grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 	�11111111111marcelo barbosa
                                     �
                                      	. Q22222222222Juscelino Kubitschek
@@ -631,7 +629,7 @@ root@428066f4c64c:/# grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 
 > Perceba que o update praticamente não alterou o layout do arquivo.
 
-### 2o. update
+### 7. 2o. Update
 ```
 mysql -u root -e \
 "UPDATE ecommerce.cliente SET nome='MARIVALDA DE ALCÂNTARA FRANCISCO ANTÔNIO JOÃO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÉ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÇA E BOURBON KANAMARY' WHERE id = 1001;"
@@ -645,7 +643,6 @@ mysql -e "SELECT * FROM ecommerce.cliente WHERE id = 1001"
 
 Output:
 ```
-root@428066f4c64c:/# mysql -e "SELECT * FROM ecommerce.cliente WHERE id = 1001"
 +------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | id   | cpf         | nome                                                                                                                                                                 |
 +------+-------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -755,7 +752,6 @@ grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 
 Output:
 ```
-root@428066f4c64c:/# grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 	�11111111111marcelo barbosa
                                     �
                                      	. Q22222222222Juscelino Kubitschek
@@ -769,7 +765,6 @@ root@428066f4c64c:/# grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
                            H=��	(�66142806000IVONE GLAUCIA VIANA DUTRA
 19052330000LUCILIA ROSA LIMA PEREIRA��                                P�(��	)�
                                       X����	2!Q98753936060MARIVALDA DE ALCÃ‚NTARA FRANCISCO ANTÃ”NIO JOÃƒO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÃ‰ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÃ‡A E BOURBON KANAMARYp�c�	�8w
-root@428066f4c64c:/#
 ```
 
 > Perceba agora que, em razão do tamanho do nome, o banco de dados realocou o registro para um novo bloco (ou, possivelmente, outra posição no mesmo bloco)
@@ -789,17 +784,21 @@ mysql -u root -e \
 "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
 
-## Configurações
-No diretório `server/mysql/etc/` encontra-se um arquivo `my.cnf` que contém os parâmetros de configuração do MySQL.<br>
-Embora não seja escopo deste laboratório o entendimento detalhado do MySQL, recomendo o estudo do arquivo `my.cnf`.
+## Referências
 
-```
-ls -latr server/mysql/etc/my.cnf
-```
+Para se aprofundar nos conceitos abordados neste laboratório:
 
-Output esperado:
-```
-barbosa@brubeck:~/labs/mysql8$ ls -latr server/mysql/etc/my.cnf
--rw-r--r-- 1 barbosa barbosa 581 jul 16 14:46 server/mysql/etc/my.cnf
-```
+1. **InnoDB Row Storage and Row Formats**
+   https://dev.mysql.com/doc/refman/8.0/en/innodb-row-format.html
 
+2. **InnoDB File-Per-Table Tablespaces (.ibd files)**
+   https://dev.mysql.com/doc/refman/8.0/en/innodb-file-per-table-tablespaces.html
+
+3. **InnoDB Architecture (Overview)**
+   https://dev.mysql.com/doc/refman/8.0/en/innodb-architecture.html
+
+4. **Row-Oriented vs. Column-Oriented Storage** (conceito geral)
+   https://en.wikipedia.org/wiki/Column-oriented_DBMS
+
+5. **Designing Data-Intensive Applications** — Martin Kleppmann
+   Capítulo 3: "Storage and Retrieval" — cobre modelos de armazenamento em linha vs. coluna.
