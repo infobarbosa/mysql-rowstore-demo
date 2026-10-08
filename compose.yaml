@@ -1,5 +1,6 @@
 services:
-  mysql:
-    container_name: mysql-demo
-    image: infobarbosa/mysql:latest
-
+  mysql-lab:
+    container_name: mysql-lab
+    image: ghcr.io/infobarbosa/mysql-lab-docker-image:latest
+    ports:
+      - "8080:8080"

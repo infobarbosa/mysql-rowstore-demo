@@ -7,57 +7,64 @@ Github: [infobarbosa](https://github.com/infobarbosa)
 Avaliar de forma rudimentar o comportamento do modelo de armazenamento baseado em linha.<br>
 Para isso faremos uso do MySQL pela sua simplicidade e praticidade.
 
-## Ambiente 
-Este laboratório pode ser executado em qualquer estação de trabalho com docker disponível.<br>
-Recomendo, porém, a execução em Linux.<br>
-Caso você não tenha um à sua disposição, utilize o serviço **AWS Cloud9**. As instruções podem ser encontradas [aqui](https://github.com/infobarbosa/data-engineering-cloud9).
+## Ambiente
+Este laboratório é executado em uma instância **AWS EC2** (`t3.medium`) provisionada automaticamente via **AWS CloudShell**.<br>
+A instância executa um container Docker com o **code-server** (Visual Studio Code direto no navegador) e o **MySQL Server 8.0** já embutidos. Todos os comandos do tutorial são executados no terminal do code-server.
 
-## Setup
-Para começar, faça o clone deste repositório:
+> **ATENÇÃO:**
+> 1. **Região:** Utilize sempre a região **Norte da Virgínia (`us-east-1`)** no Console AWS.
+> 2. **Custos:** A instância EC2 e o volume EBS consomem créditos do seu laboratório AWS Academy. Ao encerrar a aula, garanta que a instância esteja parada (**Stopped**) ou aguarde o desligamento automático da sessão.
+> 3. **Não recrie a máquina:** Se a instância já existir, siga as instruções de [Retomando o laboratório](#retomando-o-laboratório).
+
+### Passo 1: Abrir o AWS CloudShell
+1. Faça login no Console da AWS através do seu painel do AWS Academy.
+2. Certifique-se de que a região selecionada no canto superior direito é **N. Virginia (`us-east-1`)**.
+3. No topo do console, clique no ícone do **AWS CloudShell** (`>_`) ao lado da barra de pesquisa.
+4. Aguarde o terminal do CloudShell carregar.
+
+### Passo 2: Executar o script de provisionamento
+No terminal do CloudShell, execute:
 ```
-git clone https://github.com/infobarbosa/mysql-rowstore-demo.git
-```
-
->### Atenção! 
-> Os comandos desse tutorial presumem que você está no diretório raiz do projeto.
-
-```
-cd mysql-rowstore-demo
-
-```
-
-## Docker
-Por simplicidade, vamos utilizar o MySQL em um container baseado em *Docker*.<br>
-Na raiz do projeto está disponível um arquivo `compose.yaml` que contém os parâmetros de inicialização do container Docker.<br>
-Embora não seja escopo deste laboratório o entendimento detalhado do Docker, recomendo o estudo do arquivo `compose.yaml`.
-
-```
-ls -la compose.yaml
+curl -sS https://raw.githubusercontent.com/infobarbosa/mysql-rowstore-demo/main/launch-lab.sh | bash
 ```
 
-Output esperado:
-```
-barbosa@brubeck:~/labs/mysql-rowstore-demo$ ls -la compose.yaml
--rw-r--r-- 1 barbosa barbosa 589 jul 16 14:48 compose.yaml
-```
+O script realizará de forma automatizada:
+- Descoberta da VPC padrão e de uma Subnet pública.
+- Criação do Security Group `lab-mysql-sg` liberando as portas `8080` (IDE) e `22` (SSH).
+- Lançamento da instância EC2 `lab-mysql-rowstore` (`t3.medium`, Ubuntu 24.04, 20 GB gp3).
+- Instalação do Docker e inicialização do container `mysql-lab` (code-server + MySQL).
+- Exibição do IP público e do link de acesso.
 
-### Inicialização
-```
-docker compose up -d
-```
+### Passo 3: Acessar a IDE
+1. Abra no navegador o link exibido ao final do script: `http://<IP-PUBLICO>:8080`.
+2. Caso a página não responda, **aguarde de 3 a 5 minutos** para que o Docker conclua o download da imagem e atualize o navegador.
+3. O code-server abrirá diretamente na IDE, sem solicitar senha.
+4. Abra um terminal: menu superior (três linhas horizontais) > **Terminal** > **New Terminal**.
 
-Para verificar se está tudo correto:
+Verifique se o MySQL está no ar:
 ```
-docker compose logs -f
-```
-
-## Conectando-se ao container
-Conecte-se ao container `mysql-demo` com o seguinte comando:
+mysql -u root -e "SELECT VERSION();"
 
 ```
-docker exec -it mysql-demo /bin/bash
 
+Output esperado (a versão pode variar):
 ```
++-------------------------+
+| VERSION()               |
++-------------------------+
+| 8.0.46-0ubuntu0.24.04.4 |
++-------------------------+
+```
+
+>### Atenção!
+> Os comandos desse tutorial devem ser executados no **terminal do code-server**.
+
+### Retomando o laboratório
+Se a sessão do AWS Academy expirar, a instância será parada. **Não execute o `launch-lab.sh` novamente.**
+1. No Console AWS (`us-east-1`), acesse **EC2** > **Instances**.
+2. Selecione a instância **`lab-mysql-rowstore`** e clique em **Instance state** > **Start instance**.
+3. Aguarde o status **Running** e copie o novo **Public IPv4 address** (ele muda a cada reinício).
+4. Acesse `http://<NOVO_IP_PUBLICO>:8080`. O container reinicia automaticamente e os dados do MySQL são preservados.
 
 ## A base de dados
 
@@ -126,6 +133,11 @@ Output:
 ```
 
 ### 2. O arquivo de dados
+
+> **Dica:** O InnoDB não grava as alterações no arquivo de dados imediatamente; elas ficam em memória e são descarregadas para o disco em segundo plano. Se os comandos abaixo não exibirem os dados recém-inseridos, aguarde alguns segundos ou force a gravação conforme a seção [Flush](#flush):
+> ```
+> mysql -u root -e "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
+> ```
 
 Verificando o conteúdo do arquivo `cliente.ibd`
 ```
@@ -637,7 +649,7 @@ mysql -u root -e \
 
 Checando:
 ```
-mysql -e "SELECT * FROM ecommerce.cliente WHERE id = 1001"
+mysql -u root -e "SELECT * FROM ecommerce.cliente WHERE id = 1001"
 
 ```
 
@@ -802,3 +814,34 @@ Para se aprofundar nos conceitos abordados neste laboratório:
 
 5. **Designing Data-Intensive Applications** — Martin Kleppmann
    Capítulo 3: "Storage and Retrieval" — cobre modelos de armazenamento em linha vs. coluna.
+
+## Apêndice: Execução Local
+
+Fora do horário de aula, é possível executar o mesmo ambiente em qualquer máquina (ou provedor de nuvem) com Docker disponível. A imagem é publicada para `linux/amd64` e `linux/arm64` (inclusive Macs com Apple Silicon).
+
+Faça o clone deste repositório e inicialize o container com o `compose.yaml` disponível na raiz do projeto:
+```
+git clone https://github.com/infobarbosa/mysql-rowstore-demo.git
+cd mysql-rowstore-demo
+docker compose up -d
+
+```
+
+Ou, sem clonar o repositório:
+```
+docker run -d --name mysql-lab -p 8080:8080 ghcr.io/infobarbosa/mysql-lab-docker-image:latest
+
+```
+
+Acesse `http://localhost:8080` no navegador e siga o tutorial a partir do [Passo 3](#passo-3-acessar-a-ide).
+
+Para encerrar e remover o container (os dados do MySQL serão descartados):
+```
+docker compose down
+
+```
+ou
+```
+docker rm -f mysql-lab
+
+```
