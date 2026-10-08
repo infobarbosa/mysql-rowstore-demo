@@ -134,6 +134,11 @@ Output:
 
 ### 2. O arquivo de dados
 
+> **Dica:** O InnoDB não grava as alterações no arquivo de dados imediatamente; elas ficam em memória e são descarregadas para o disco em segundo plano. Se os comandos abaixo não exibirem os dados recém-inseridos, aguarde alguns segundos ou force a gravação conforme a seção [Flush](#flush):
+> ```
+> mysql -u root -e "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
+> ```
+
 Verificando o conteúdo do arquivo `cliente.ibd`
 ```
 cat /var/lib/mysql/ecommerce/cliente.ibd
