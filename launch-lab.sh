@@ -157,38 +157,32 @@ fi
 echo -e "  -> AMI Ubuntu 24.04 LTS: ${BOLD}${AMI_ID}${NC}"
 
 # ------------------------------------------------------------------------------
-# 4. Verificação de Idempotência e Lançamento da Instância EC2
+# 4. Lançamento da Instância EC2 (sempre uma nova, com data e hora no nome)
 # ------------------------------------------------------------------------------
-echo -e "\n${BLUE}[4/5] Verificando existência de instância prévia...${NC}"
-INSTANCE_TAG_NAME="lab-mysql-rowstore"
+echo -e "\n${BLUE}[4/5] Lançando a instância EC2...${NC}"
+# Cada execução cria uma instância NOVA, com data e hora (de Brasília) no nome,
+# para não colidir com instâncias de execuções anteriores.
+INSTANCE_PREFIX="lab-mysql-rowstore"
+INSTANCE_TAG_NAME="${INSTANCE_PREFIX}-$(TZ=America/Sao_Paulo date +%Y-%m-%d_%H_%M_%S)"
 
-# Verificar se já existe uma instância ativa ou parada com a tag lab-mysql-rowstore
-EXISTING_INSTANCE_INFO=$(aws ec2 describe-instances \
+# Instâncias de execuções anteriores não são alteradas, mas consomem créditos enquanto existirem
+PREVIOUS_INSTANCES=$(aws ec2 describe-instances \
     --region "${AWS_REGION}" \
-    --filters "Name=tag:Name,Values=${INSTANCE_TAG_NAME}" "Name=instance-state-name,Values=pending,running,stopped" \
-    --query "Reservations[0].Instances[0].[InstanceId,State.Name]" \
+    --filters "Name=tag:Name,Values=${INSTANCE_PREFIX}*" "Name=instance-state-name,Values=pending,running,stopping,stopped" \
+    --query "Reservations[].Instances[].[Tags[?Key=='Name']|[0].Value,InstanceId,State.Name]" \
     --output text 2>/dev/null || true)
 
-INSTANCE_ID=""
-INSTANCE_STATE=""
-
-if [ -n "${EXISTING_INSTANCE_INFO}" ] && [ "${EXISTING_INSTANCE_INFO}" != "None" ]; then
-    INSTANCE_ID=$(echo "${EXISTING_INSTANCE_INFO}" | awk '{print $1}')
-    INSTANCE_STATE=$(echo "${EXISTING_INSTANCE_INFO}" | awk '{print $2}')
+if [ -n "${PREVIOUS_INSTANCES}" ]; then
+    echo -e "${YELLOW}  [AVISO] Instâncias de execuções anteriores deste laboratório (não serão alteradas):${NC}"
+    echo "${PREVIOUS_INSTANCES}" | sed 's/^/       /'
+    echo -e "${YELLOW}  Este script não religa instâncias anteriores. Para continuar numa delas, siga 'Retomando o laboratório' no README.${NC}"
+    echo -e "${YELLOW}  Se não for mais usá-las, encerre-as no Console EC2 (Instance state > Terminate instance).${NC}"
 fi
 
-if [ -n "${INSTANCE_ID}" ] && [ "${INSTANCE_ID}" != "None" ]; then
-    echo -e "  -> Instância '${INSTANCE_TAG_NAME}' já existente encontrada: ${BOLD}${INSTANCE_ID}${NC} (Estado: ${BOLD}${INSTANCE_STATE}${NC})"
-    
-    if [ "${INSTANCE_STATE}" == "stopped" ]; then
-        echo -e "  -> Inicializando instância existente parada..."
-        aws ec2 start-instances --region "${AWS_REGION}" --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1 || true
-    fi
-else
-    echo -e "  -> Provisionando nova instância EC2 (${BOLD}${INSTANCE_TYPE}${NC})..."
+echo -e "  -> Provisionando nova instância EC2 ${BOLD}${INSTANCE_TAG_NAME}${NC} (${BOLD}${INSTANCE_TYPE}${NC})..."
 
-    # Script de User Data executado no boot da maquina
-    USER_DATA_SCRIPT='#!/bin/bash
+# Script de User Data executado no boot da maquina
+USER_DATA_SCRIPT='#!/bin/bash
 export HOME=/root
 export DEBIAN_FRONTEND=noninteractive
 
@@ -217,22 +211,21 @@ docker run -d \
   ghcr.io/infobarbosa/mysql-lab-docker-image:latest
 '
 
-    # Lancamento da instancia
-    INSTANCE_ID=$(aws ec2 run-instances \
-        --region "${AWS_REGION}" \
-        --image-id "${AMI_ID}" \
-        --instance-type "${INSTANCE_TYPE}" \
-        --iam-instance-profile Name="LabInstanceProfile" \
-        --subnet-id "${SUBNET_ID}" \
-        --security-group-ids "${SG_ID}" \
-        --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${INSTANCE_TAG_NAME}}]" \
-        --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":20,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
-        --user-data "${USER_DATA_SCRIPT}" \
-        --query "Instances[0].InstanceId" \
-        --output text)
+# Lancamento da instancia
+INSTANCE_ID=$(aws ec2 run-instances \
+    --region "${AWS_REGION}" \
+    --image-id "${AMI_ID}" \
+    --instance-type "${INSTANCE_TYPE}" \
+    --iam-instance-profile Name="LabInstanceProfile" \
+    --subnet-id "${SUBNET_ID}" \
+    --security-group-ids "${SG_ID}" \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=${INSTANCE_TAG_NAME}}]" \
+    --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"VolumeSize":20,"VolumeType":"gp3","DeleteOnTermination":true}}]' \
+    --user-data "${USER_DATA_SCRIPT}" \
+    --query "Instances[0].InstanceId" \
+    --output text)
 
-    echo -e "  -> Instância criada com sucesso: ${BOLD}${INSTANCE_ID}${NC}"
-fi
+echo -e "  -> Instância criada com sucesso: ${BOLD}${INSTANCE_ID}${NC}"
 
 # ------------------------------------------------------------------------------
 # 5. Polling de Estado e Retorno Ergonômico ao Usuário
@@ -273,6 +266,7 @@ fi
 echo -e "\n${GREEN}${BOLD}===================================================================${NC}"
 echo -e "${GREEN}${BOLD}            AMBIENTE DE LABORATÓRIO PRONTO PARA USO!              ${NC}"
 echo -e "${GREEN}${BOLD}===================================================================${NC}"
+echo -e " ${BOLD}Instância:${NC}        ${INSTANCE_TAG_NAME}"
 echo -e " ${BOLD}Instância ID:${NC}     ${INSTANCE_ID}"
 echo -e " ${BOLD}IP Público:${NC}       ${PUBLIC_IP}"
 echo -e " ${BOLD}Link de Acesso:${NC}   ${CYAN}${BOLD}http://${PUBLIC_IP}:8080${NC}"
