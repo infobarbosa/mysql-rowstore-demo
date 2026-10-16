@@ -14,7 +14,7 @@ A instância executa um container Docker com o **code-server** (Visual Studio Co
 > **ATENÇÃO:**
 > 1. **Região:** Utilize sempre a região **Norte da Virgínia (`us-east-1`)** no Console AWS.
 > 2. **Custos:** A instância EC2 e o volume EBS consomem créditos do seu laboratório AWS Academy. Ao encerrar a aula, garanta que a instância esteja parada (**Stopped**) ou aguarde o desligamento automático da sessão.
-> 3. **Não recrie a máquina:** Se a instância já existir, siga as instruções de [Retomando o laboratório](#retomando-o-laboratório).
+> 3. **Não recrie a máquina para continuar o trabalho:** cada execução do `launch-lab.sh` cria uma instância **nova e vazia**, com data e hora no nome. Se a sua instância já existir, siga as instruções de [Retomando o laboratório](#retomando-o-laboratório). Se precisar mesmo recriar, encerre a anterior (**Instance state** > **Terminate instance**) para não consumir créditos.
 
 ### Passo 1: Abrir o AWS CloudShell
 1. Faça login no Console da AWS através do seu painel do AWS Academy.
@@ -31,7 +31,7 @@ curl -sS https://raw.githubusercontent.com/infobarbosa/mysql-rowstore-demo/main/
 O script realizará de forma automatizada:
 - Descoberta da VPC padrão e de uma Subnet pública.
 - Criação do Security Group `lab-mysql-sg` liberando as portas `8080` (IDE) e `22` (SSH).
-- Lançamento da instância EC2 `lab-mysql-rowstore` (`t3.medium`, Ubuntu 24.04, 20 GB gp3).
+- Lançamento de uma nova instância EC2 `lab-mysql-rowstore-AAAA-MM-DD_HH_MI_SS` (`t3.medium`, sufixo com a data e hora da execução, Ubuntu 24.04, 20 GB gp3).
 - Instalação do Docker e inicialização do container `mysql-lab` (code-server + MySQL).
 - Exibição do IP público e do link de acesso.
 
@@ -60,9 +60,9 @@ Output esperado (a versão pode variar):
 > Os comandos desse tutorial devem ser executados no **terminal do code-server**.
 
 ### Retomando o laboratório
-Se a sessão do AWS Academy expirar, a instância será parada. **Não execute o `launch-lab.sh` novamente.**
+Se a sessão do AWS Academy expirar, a instância será parada. **Não execute o `launch-lab.sh` novamente:** ele criaria uma instância nova, sem o seu trabalho.
 1. No Console AWS (`us-east-1`), acesse **EC2** > **Instances**.
-2. Selecione a instância **`lab-mysql-rowstore`** e clique em **Instance state** > **Start instance**.
+2. Selecione a sua instância **`lab-mysql-rowstore-<data e hora>`** (se houver mais de uma, a mais recente) e clique em **Instance state** > **Start instance**.
 3. Aguarde o status **Running** e copie o novo **Public IPv4 address** (ele muda a cada reinício).
 4. Acesse `http://<NOVO_IP_PUBLICO>:8080`. O container reinicia automaticamente e os dados do MySQL são preservados.
 
