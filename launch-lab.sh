@@ -52,18 +52,47 @@ if [ -z "${VPC_ID}" ] || [ "${VPC_ID}" == "None" ]; then
 fi
 echo -e "  -> VPC Padrão: ${BOLD}${VPC_ID}${NC}"
 
-# Localizar uma Subnet Pública associada à VPC Padrão
-SUBNET_ID=$(aws ec2 describe-subnets \
+# Tipo de instância do laboratório e alternativa de mesmo porte (geração anterior).
+# A alternativa só é usada se nenhuma zona da região oferecer o tipo principal.
+INSTANCE_TYPE="t3.medium"
+FALLBACK_INSTANCE_TYPE="t2.medium"
+
+# Zonas de disponibilidade que oferecem um tipo de instância (separadas por vírgula)
+zonas_com_oferta() {
+    aws ec2 describe-instance-type-offerings \
+        --region "${AWS_REGION}" \
+        --location-type availability-zone \
+        --filters "Name=instance-type,Values=$1" \
+        --query "InstanceTypeOfferings[].Location" \
+        --output text | tr '\t' ','
+}
+
+# Nem toda zona oferece todos os tipos (ex.: a us-east-1e não oferece t3 nem m5).
+# Por isso a Subnet é escolhida apenas entre as zonas que oferecem o tipo.
+AZS=$(zonas_com_oferta "${INSTANCE_TYPE}")
+if [ -z "${AZS}" ]; then
+    echo -e "${YELLOW}  [AVISO] Nenhuma zona da região oferece ${INSTANCE_TYPE}; usando ${FALLBACK_INSTANCE_TYPE}.${NC}"
+    INSTANCE_TYPE="${FALLBACK_INSTANCE_TYPE}"
+    AZS=$(zonas_com_oferta "${INSTANCE_TYPE}")
+fi
+if [ -z "${AZS}" ]; then
+    echo -e "${RED}[ERRO] Nenhuma zona da região ${AWS_REGION} oferece ${INSTANCE_TYPE}.${NC}"
+    exit 1
+fi
+echo -e "  -> Zonas que oferecem ${BOLD}${INSTANCE_TYPE}${NC}: ${AZS}"
+
+# Localizar uma Subnet Pública da VPC Padrão numa dessas zonas
+read -r SUBNET_ID SUBNET_AZ < <(aws ec2 describe-subnets \
     --region "${AWS_REGION}" \
-    --filters "Name=vpc-id,Values=${VPC_ID}" \
-    --query "Subnets[0].SubnetId" \
+    --filters "Name=vpc-id,Values=${VPC_ID}" "Name=availability-zone,Values=${AZS}" \
+    --query "Subnets[0].[SubnetId,AvailabilityZone]" \
     --output text)
 
 if [ -z "${SUBNET_ID}" ] || [ "${SUBNET_ID}" == "None" ]; then
-    echo -e "${RED}[ERRO] Nenhuma Subnet encontrada na VPC ${VPC_ID}.${NC}"
+    echo -e "${RED}[ERRO] Nenhuma Subnet da VPC ${VPC_ID} está numa zona que oferece ${INSTANCE_TYPE}.${NC}"
     exit 1
 fi
-echo -e "  -> Subnet selecionada: ${BOLD}${SUBNET_ID}${NC}"
+echo -e "  -> Subnet selecionada: ${BOLD}${SUBNET_ID}${NC} (${SUBNET_AZ})"
 
 # ------------------------------------------------------------------------------
 # 2. Configuração do Security Group (lab-mysql-sg)
@@ -156,7 +185,7 @@ if [ -n "${INSTANCE_ID}" ] && [ "${INSTANCE_ID}" != "None" ]; then
         aws ec2 start-instances --region "${AWS_REGION}" --instance-ids "${INSTANCE_ID}" >/dev/null 2>&1 || true
     fi
 else
-    echo -e "  -> Provisionando nova instância EC2 (${BOLD}t3.medium${NC})..."
+    echo -e "  -> Provisionando nova instância EC2 (${BOLD}${INSTANCE_TYPE}${NC})..."
 
     # Script de User Data executado no boot da maquina
     USER_DATA_SCRIPT='#!/bin/bash
@@ -192,7 +221,7 @@ docker run -d \
     INSTANCE_ID=$(aws ec2 run-instances \
         --region "${AWS_REGION}" \
         --image-id "${AMI_ID}" \
-        --instance-type "t3.medium" \
+        --instance-type "${INSTANCE_TYPE}" \
         --iam-instance-profile Name="LabInstanceProfile" \
         --subnet-id "${SUBNET_ID}" \
         --security-group-ids "${SG_ID}" \
