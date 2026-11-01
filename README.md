@@ -24,7 +24,7 @@ A instância executa um container Docker com o **code-server** (Visual Studio Co
 
 ### Passo 2: Executar o script de provisionamento
 No terminal do CloudShell, execute:
-```
+```sh
 curl -sS https://raw.githubusercontent.com/infobarbosa/mysql-rowstore-demo/main/launch-lab.sh | bash
 ```
 
@@ -42,7 +42,7 @@ O script realizará de forma automatizada:
 4. Abra um terminal: menu superior (três linhas horizontais) > **Terminal** > **New Terminal**.
 
 Verifique se o MySQL está no ar:
-```
+```sh
 mysql -u root -e "SELECT VERSION();"
 
 ```
@@ -66,21 +66,30 @@ Se a sessão do AWS Academy expirar, a instância será parada. **Não execute o
 3. Aguarde o status **Running** e copie o novo **Public IPv4 address** (ele muda a cada reinício).
 4. Acesse `http://<NOVO_IP_PUBLICO>:8080`. O container reinicia automaticamente e os dados do MySQL são preservados.
 
-## A base de dados
+### Convenções
+Cada bloco de comando do roteiro tem na primeira linha um rótulo, como `# 2.b.1` (seção 2, subseção 2.b, primeiro bloco). Os blocos sem rótulo, logo depois, mostram a saída esperada.
 
-### Database `ecommerce`
+Alguns valores **mudam a cada execução**: os *checksums*, identificadores de transação e *LSNs* no cabeçalho das páginas do arquivo `.ibd`. Os seus não vão bater byte a byte com os do texto, e isso é esperado. Contagens de linhas e os trechos legíveis com os campos dos registros (`cpf` e `nome`), esses sim, devem bater.
+
+Os comandos funcionam a partir de qualquer pasta.
+
+## 1. A base de dados
+
+### 1.a. Database `ecommerce`
 
 Criando a base de dados *ecommerce*:
-```
+```sh
+# 1.a.1
 mysql -u root -e \
 "CREATE DATABASE IF NOT EXISTS ecommerce;"
 
 ```
 
-### Tabela `cliente`
+### 1.b. Tabela `cliente`
 
 Criando a tabela *cliente*:
-```
+```sh
+# 1.b.1
 mysql -u root -e \
 "CREATE TABLE ecommerce.cliente(
     id int PRIMARY KEY,
@@ -91,7 +100,8 @@ mysql -u root -e \
 ```
 
 Verificando se deu certo
-```
+```sh
+# 1.b.2
 mysql -u root -e \
 "DESCRIBE ecommerce.cliente;"
 ```
@@ -107,10 +117,11 @@ Output esperado:
 +-------+------+------+-----+---------+-------+
 ```
 
-## Operações em linhas (ou registros)
+## 2. Operações em linhas (ou registros)
 
-### 1. 1o. Insert
-```
+### 2.a. 1o. Insert
+```sh
+# 2.a.1
 mysql -u root -e \
 "INSERT INTO ecommerce.cliente(id, cpf, nome)
 VALUES (10, '11111111111', 'marcelo barbosa');"
@@ -118,7 +129,8 @@ VALUES (10, '11111111111', 'marcelo barbosa');"
 ```
 
 Verificando:
-```
+```sh
+# 2.a.2
 mysql -u root -e \
 "SELECT * FROM ecommerce.cliente;"
 ```
@@ -132,7 +144,7 @@ Output:
 +----+-------------+-----------------+
 ```
 
-### 2. O arquivo de dados
+### 2.b. O arquivo de dados
 
 > **Dica:** O InnoDB não grava as alterações no arquivo de dados imediatamente; elas ficam em memória e são descarregadas para o disco em segundo plano. Se os comandos abaixo não exibirem os dados recém-inseridos, aguarde alguns segundos ou force a gravação conforme a seção [Flush](#flush):
 > ```
@@ -140,7 +152,8 @@ Output:
 > ```
 
 Verificando o conteúdo do arquivo `cliente.ibd`
-```
+```sh
+# 2.b.1
 cat /var/lib/mysql/ecommerce/cliente.ibd
 
 ```
@@ -159,9 +172,9 @@ Agora via utilitário `hexdump`:
 
 > O utilitário `hexdump` exibe o conteúdo do arquivo em formato hexadecimal. Na coluna da direita, é possível visualizar os dados legíveis (ASCII). Observe como os campos `cpf` e `nome` aparecem **lado a lado**, sem separadores — essa é a essência do armazenamento em linha.
 
-```
+```sh
+# 2.b.2
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -182,9 +195,9 @@ Output:
 ```
 
 Agora via utilitário `grep`:
-```
+```sh
+# 2.b.3
 grep --text barbosa /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -193,15 +206,17 @@ D��11111111111marcelo barbosapc����8Х
 ```
 
 
-### 3. 2o. Insert
-```
+### 2.c. 2o. Insert
+```sh
+# 2.c.1
 mysql -u root -e \
 "INSERT INTO ecommerce.cliente(id, cpf, nome)
 VALUES (11, '22222222222', 'Juscelino Kubitschek');"
 ```
 
 Checando:
-```
+```sh
+# 2.c.2
 mysql -u root -e \
 "SELECT * FROM ecommerce.cliente;"
 ```
@@ -219,7 +234,8 @@ Output:
 Verificando o arquivo de dados:
 
 ##### `cat`
-```
+```sh
+# 2.c.3
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -240,9 +256,9 @@ Output:
 ```
 
 ##### `hexdump`
-```
+```sh
+# 2.c.4
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -267,9 +283,9 @@ Output:
 ```
 
 ##### `grep`
-```
+```sh
+# 2.c.5
 grep --text Juscelino /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -279,8 +295,9 @@ Output:
 22222222222Juscelino Kubitschekpc�'-8<z
 ```
 
-### 4. Insert em lote
-```
+### 2.d. Insert em lote
+```sh
+# 2.d.1
 mysql -u root -Bse \
 "INSERT INTO ecommerce.cliente (id, cpf, nome) VALUES (1001, '98753936060', 'MARIVALDA KANAMARY');
 INSERT INTO ecommerce.cliente (id, cpf, nome) VALUES (1002, '12455426050', 'JUCILENE MOREIRA CRUZ');
@@ -292,7 +309,8 @@ INSERT INTO ecommerce.cliente (id, cpf, nome) VALUES (1007, '19052330000', 'LUCI
 ```
 
 Verificando se os inserts ocorreram como esperado:
-```
+```sh
+# 2.d.2
 mysql -u root -e \
 "SELECT * FROM ecommerce.cliente;"
 ```
@@ -315,7 +333,8 @@ Output esperado:
 ```
 
 ##### `cat`
-```
+```sh
+# 2.d.3
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -342,9 +361,9 @@ Y;[9=wD~|�ݒpc[��86��ߔW��������8_�E�}�
 ```
 
 ##### `hexdump`
-```
+```sh
+# 2.d.4
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -395,7 +414,8 @@ Output:
 ```
 
 ##### `grep`
-```
+```sh
+# 2.d.5
 grep --text MARIVALDA /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -415,16 +435,18 @@ Output:
 19052330000LUCILIA ROSA LIMA PEREIRAp!c�ߔW8_�                                                                 P�(��	)�
 ```
 
-### 5. Delete
+### 2.e. Delete
 
 Removendo o registro 11 (Juscelino Kubitschek):
-```
+```sh
+# 2.e.1
 mysql -u root -e \
 "DELETE FROM ecommerce.cliente WHERE id = 11;"
 ```
 
 Checando:
-```
+```sh
+# 2.e.2
 mysql -u root -e "SELECT * FROM ecommerce.cliente;"
 ```
 
@@ -445,9 +467,9 @@ Output:
 ```
 
 ##### `cat`
-```
+```sh
+# 2.e.3
 cat /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -473,9 +495,9 @@ Y;[9=wD~|�ݒpc[��86�:�ɛ��������8p�E�}�
 ```
 
 ##### `hexdump`
-```
+```sh
+# 2.e.4
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -529,9 +551,9 @@ Output:
 ```
 
 ##### `grep`
-```
+```sh
+# 2.e.5
 grep --text Juscelino /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -552,18 +574,18 @@ Output:
 
 > Perceba que, embora o registro tenha sido removido logicamente (não aparece mais no SELECT), os dados de "Juscelino Kubitschek" **ainda estão presentes no arquivo físico**. O MySQL marca o espaço como disponível para reutilização, mas não apaga imediatamente os bytes do disco.
 
-### 6. Update
-```
+### 2.f. Update
+```sh
+# 2.f.1
 mysql -u root -e \
 "UPDATE ecommerce.cliente SET nome='MARI K.' WHERE id = 1001"
-
 ```
 
 Checando:
-```
+```sh
+# 2.f.2
 mysql -u root -e \
 "SELECT * FROM ecommerce.cliente WHERE id = 1001"
-
 ```
 
 Output:
@@ -577,7 +599,8 @@ Output:
 
 
 ##### `cat`
-```
+```sh
+# 2.f.3
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -604,9 +627,9 @@ Y;[9=wD~|�ݒpc[��86��6R��������8q�E�}�
 ```
 
 ##### `hexdump`
-```
+```sh
+# 2.f.4
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
-
 ```
 
 Output:
@@ -618,7 +641,8 @@ Output:
 ```
 
 ##### `grep`
-```
+```sh
+# 2.f.5
 grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -641,16 +665,17 @@ Output:
 
 > Perceba que o update praticamente não alterou o layout do arquivo.
 
-### 7. 2o. Update
-```
+### 2.g. 2o. Update
+```sh
+# 2.g.1
 mysql -u root -e \
 "UPDATE ecommerce.cliente SET nome='MARIVALDA DE ALCÂNTARA FRANCISCO ANTÔNIO JOÃO CARLOS XAVIER DE PAULA MIGUEL RAFAEL JOAQUIM JOSÉ GONZAGA PASCOAL CIPRIANO SERAFIM DE BRAGANÇA E BOURBON KANAMARY' WHERE id = 1001;"
 ```
 
 Checando:
-```
+```sh
+# 2.g.2
 mysql -u root -e "SELECT * FROM ecommerce.cliente WHERE id = 1001"
-
 ```
 
 Output:
@@ -663,7 +688,8 @@ Output:
 ```
 
 ##### `cat`
-```
+```sh
+# 2.g.3
 cat /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -693,7 +719,8 @@ Y;[9=wD~|�ݒpc[��86�	���������8wE�T�
 ```
 
 ##### `hexdump`
-```
+```sh
+# 2.g.4
 hd -C /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -758,7 +785,8 @@ Output:
 ```
 
 ##### `grep`
-```
+```sh
+# 2.g.5
 grep --text MARI /var/lib/mysql/ecommerce/cliente.ibd
 ```
 
@@ -791,7 +819,7 @@ Espero que este exercício tenha proporcionado uma compreensão prática sobre o
 ## Flush
 
 Caso necessário, é possível forçar o flush dos dados da memória para o disco de forma a verificar o arquivo de dados.
-```
+```sh
 mysql -u root -e \
 "FLUSH LOCAL TABLES ecommerce.cliente FOR EXPORT;"
 ```
@@ -820,28 +848,24 @@ Para se aprofundar nos conceitos abordados neste laboratório:
 Fora do horário de aula, é possível executar o mesmo ambiente em qualquer máquina (ou provedor de nuvem) com Docker disponível. A imagem é publicada para `linux/amd64` e `linux/arm64` (inclusive Macs com Apple Silicon).
 
 Faça o clone deste repositório e inicialize o container com o `compose.yaml` disponível na raiz do projeto:
-```
+```sh
 git clone https://github.com/infobarbosa/mysql-rowstore-demo.git
 cd mysql-rowstore-demo
 docker compose up -d
-
 ```
 
 Ou, sem clonar o repositório:
-```
+```sh
 docker run -d --name mysql-lab -p 8080:8080 ghcr.io/infobarbosa/mysql-lab-docker-image:latest
-
 ```
 
 Acesse `http://localhost:8080` no navegador e siga o tutorial a partir do [Passo 3](#passo-3-acessar-a-ide).
 
 Para encerrar e remover o container (os dados do MySQL serão descartados):
-```
+```sh
 docker compose down
-
 ```
 ou
-```
+```sh
 docker rm -f mysql-lab
-
 ```
