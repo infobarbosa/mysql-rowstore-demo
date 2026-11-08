@@ -138,6 +138,7 @@ Um banco de dados **orientado a linha** (*row-oriented*, ou *rowstore*) é o tip
   <img src="images/logos/postgresql.svg" height="56" alt="PostgreSQL">&nbsp;&nbsp;
   <img src="images/logos/sqlserver.svg" height="56" alt="Microsoft SQL Server">
 </p>
+<p align="center"><sub>Oracle, MySQL, PostgreSQL e Microsoft SQL Server são marcas de seus respectivos titulares, usadas aqui apenas para identificar os produtos. Veja <a href="#marcas">Marcas</a>.</sub></p>
 
 No banco relacional, os dados vivem em **tabelas**. Cada **linha** é um registro, por exemplo um cliente, e cada **coluna** é um atributo desse registro, como nome, CPF ou renda. A **chave primária** identifica cada linha sem ambiguidade, e o **SQL** é a linguagem para consultar e alterar as tabelas. Cada alteração acontece dentro de uma **transação**, com as garantias ACID: ou tudo acontece, ou nada acontece.
 
@@ -149,7 +150,11 @@ Guarde essa tabela: ela volta nas próximas seções. O laboratório da Parte 2 
 
 "Tabela" é uma ideia do banco de dados. O sistema operacional não sabe o que é uma tabela, só sabe o que é um **arquivo**. E o disco não sabe o que é um arquivo, só sabe ler e gravar **blocos**. Entre a sua consulta SQL e os bytes no disco há uma descida de níveis:
 
-![À esquerda, quem conversa com quem: a aplicação envia o SELECT ao MySQL, o MySQL pede ao sistema operacional a página 4 do arquivo cliente.ibd, e o sistema operacional pede ao disco os 4 blocos dessa página; os dados voltam pelo mesmo caminho. À direita, a mesma tabela descendo os níveis: a tabela ecommerce.cliente vira o arquivo /var/lib/mysql/ecommerce/cliente.ibd; o arquivo é dividido em páginas de 16 KB, p0 a p6, das quais p0 a p3 são de controle do arquivo, p4 guarda os registros e p5 e p6 estão livres; dentro da página 4, depois do cabeçalho e dos registros infimum e supremum, os registros ficam inteiros, um depois do outro, com id, cpf e nome lado a lado; cada página corresponde a 4 blocos de 4 KB do sistema de arquivos](diagramas/01b-onde-a-tabela-mora.svg)
+![Quem conversa com quem, da esquerda para a direita: a aplicação envia ao MySQL o SELECT * FROM cliente WHERE id = 1001; o MySQL pede ao sistema operacional a página 4 do arquivo cliente.ibd; o sistema operacional pede ao disco os 4 blocos dessa página; de volta, o disco entrega bytes, o sistema operacional entrega a página de 16 KB e o MySQL entrega as linhas. Cada nível só entende a sua unidade: o MySQL fala em tabelas e páginas, o sistema operacional em arquivos, o disco em blocos](diagramas/01b1-quem-conversa-com-quem.svg)
+
+A mesma descida, olhando para a tabela:
+
+![A tabela descendo os níveis: a tabela ecommerce.cliente vira o arquivo /var/lib/mysql/ecommerce/cliente.ibd; o arquivo é dividido em páginas de 16 KB, p0 a p6, das quais p0 a p3 são de controle do arquivo, p4 guarda os registros e p5 e p6 estão livres; dentro da página 4, depois do cabeçalho e dos registros infimum e supremum, os registros ficam inteiros, um depois do outro, com id, cpf e nome lado a lado, seguidos do espaço livre e do diretório; cada página corresponde a 4 blocos de 4 KB do sistema de arquivos](diagramas/01b2-descendo-os-niveis.svg)
 
 | Nível | Neste laboratório |
 |---|---|
@@ -158,7 +163,7 @@ Guarde essa tabela: ela volta nas próximas seções. O laboratório da Parte 2 
 | **página** | a unidade com que o InnoDB, o motor de armazenamento do MySQL, lê e grava: 16 KB |
 | **bloco** | a unidade do sistema de arquivos: 4 KB |
 
-A peça que define o rowstore está no meio da imagem: **dentro da página, cada registro fica inteiro**, com todos os seus atributos lado a lado. Quem lê a página para buscar um cliente traz junto, de uma vez, todos os dados desse cliente.
+A peça que define o rowstore está no meio da segunda imagem: **dentro da página, cada registro fica inteiro**, com todos os seus atributos lado a lado. Quem lê a página para buscar um cliente traz junto, de uma vez, todos os dados desse cliente.
 
 Três comandos mostram esses níveis no seu ambiente. Cada banco de dados do MySQL é uma pasta dentro de `/var/lib/mysql`:
 
@@ -261,7 +266,7 @@ Na prática, os dois mundos convivem. O banco orientado a linha é a **fonte da 
 - **ETL** (*extract, transform, load*) faz o mesmo em lote, por exemplo uma vez por noite.
 - Do outro lado, os dados ganham o formato que a análise precisa: colunas, em Parquet ou num banco colunar. Esse é o assunto dos laboratórios [iceberg-tableformat-demo](https://github.com/infobarbosa/iceberg-tableformat-demo) e [clickhouse-columnstore-demo](https://github.com/infobarbosa/clickhouse-columnstore-demo).
 
-Na Parte 2 você desce até o nível mais baixo da imagem da seção 1.b: cria a tabela `cliente`, insere registros e os encontra no arquivo `cliente.ibd`, byte a byte.
+Na Parte 2 você desce até o nível mais baixo das imagens da seção 1.b: cria a tabela `cliente`, insere registros e os encontra no arquivo `cliente.ibd`, byte a byte.
 
 ---
 
@@ -313,7 +318,7 @@ Output esperado:
 
 #### O arquivo da tabela
 
-A tabela ganhou o seu arquivo, dentro da pasta da database, como na imagem da seção 1.b:
+A tabela ganhou o seu arquivo, dentro da pasta da database, como na segunda imagem da seção 1.b:
 
 ```sh
 # 2.b.3
@@ -1099,6 +1104,10 @@ Espero que este exercício tenha proporcionado uma compreensão prática sobre o
 **Ranking**
 
 13. [DB-Engines Ranking](https://db-engines.com/en/ranking) e o [método de cálculo](https://db-engines.com/en/ranking_definition) da pontuação.
+
+### Marcas
+
+Oracle e MySQL são marcas registradas da Oracle Corporation e/ou de suas afiliadas. Microsoft e SQL Server são marcas registradas da Microsoft Corporation. PostgreSQL e o logotipo do elefante são marcas registradas da PostgreSQL Community Association. Os nomes e logotipos são usados apenas para identificar os produtos; este material não tem relação com os titulares nem foi endossado por eles.
 
 ---
 

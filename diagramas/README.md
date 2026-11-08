@@ -12,7 +12,8 @@ Os logos dos bancos de dados ficam à parte, em [`../images/logos`](../images/lo
 | Arquivo | Seção |
 |---|---|
 | `01a-tabela-cliente` | 1.a |
-| `01b-onde-a-tabela-mora` | 1.b |
+| `01b1-quem-conversa-com-quem` | 1.b |
+| `01b2-descendo-os-niveis` | 1.b |
 | `01c-linha-x-coluna` | 1.c |
 | `01d-oltp-x-olap` | 1.d |
 | `01e-arquitetura` | 1.e |
