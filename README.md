@@ -150,7 +150,7 @@ Guarde essa tabela: ela volta nas próximas seções. O laboratório da Parte 2 
 
 "Tabela" é uma ideia do banco de dados. O sistema operacional não sabe o que é uma tabela, só sabe o que é um **arquivo**. E o disco não sabe o que é um arquivo, só sabe ler e gravar **blocos**. Entre a sua consulta SQL e os bytes no disco há uma descida de níveis:
 
-![Quem conversa com quem, da esquerda para a direita: a aplicação envia ao MySQL o SELECT * FROM cliente WHERE id = 1001; o MySQL pede ao sistema operacional a página 4 do arquivo cliente.ibd; o sistema operacional pede ao disco os 4 blocos dessa página; de volta, o disco entrega bytes, o sistema operacional entrega a página de 16 KB e o MySQL entrega as linhas. Cada nível só entende a sua unidade: o MySQL fala em tabelas e páginas, o sistema operacional em arquivos, o disco em blocos](diagramas/01b1-quem-conversa-com-quem.svg)
+![Quem conversa com quem, da esquerda para a direita, em ícones: você pede à aplicação, no celular, o cliente 1001; a aplicação envia ao banco de dados MySQL o SELECT * FROM cliente WHERE id = 1001; o MySQL pede ao sistema operacional, representado por uma engrenagem, a página 4 do arquivo cliente.ibd; o sistema operacional pede ao disco os 4 blocos dessa página; de volta, o disco entrega bytes, o sistema operacional entrega a página de 16 KB, o MySQL entrega as linhas e a aplicação mostra a tela. Cada nível só entende a sua unidade: a aplicação fala em telas, o MySQL em tabelas e páginas, o sistema operacional em arquivos, o disco em blocos](diagramas/01b1-quem-conversa-com-quem.svg)
 
 A mesma descida, olhando para a tabela:
 
