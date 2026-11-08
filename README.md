@@ -216,7 +216,9 @@ Guardar o registro inteiro junto é ótimo quando a consulta quer o registro int
 
 Compare duas consultas sobre a mesma tabela `cliente`, gravada dos dois jeitos:
 
-![Duas consultas sobre a mesma tabela gravada como rowstore e como colunar. Na primeira, SELECT * WHERE id = 1002, o rowstore lê um único registro, com os bytes juntos, enquanto o colunar monta a linha buscando um valor em cada uma das quatro colunas. Na segunda, SELECT uf, avg(renda) GROUP BY uf, o rowstore lê todos os registros inteiros, inclusive id e nome, que a consulta não usa, enquanto o colunar lê só as colunas renda e uf](diagramas/01c-linha-x-coluna.svg)
+![Consulta pontual, SELECT * FROM cliente WHERE id = 1002: uma linha, todas as colunas. No rowstore, os quatro registros estão gravados inteiros, um depois do outro, e a consulta lê só o registro 1002, com os bytes juntos. No colunar, cada coluna está num arquivo, id.dat, nome.dat, renda.dat e uf.dat, e a consulta monta a linha buscando um valor em cada um](diagramas/01c1-consulta-pontual.svg)
+
+![Consulta analítica, SELECT uf, avg(renda) FROM cliente GROUP BY uf: todas as linhas, duas colunas. No rowstore, a consulta lê todos os registros inteiros, inclusive id e nome, que não usa. No colunar, lê só os arquivos renda.dat e uf.dat](diagramas/01c2-consulta-analitica.svg)
 
 | Consulta | Rowstore | Colunar |
 |---|---|---|
@@ -920,6 +922,8 @@ Output:
 
 > Perceba que o update praticamente não alterou o layout do arquivo. O nome novo, `MARI K.`, foi escrito por cima do antigo, e os bytes que sobraram (`DA KANAMARY`) continuam lá, fora do tamanho registrado para a coluna.
 
+![UPDATE que cabe no lugar: o nome MARIVALDA KANAMARY, de 18 bytes, vira MARI K., de 7; o byte de tamanho passa de 0x12 para 0x07; o registro continua no mesmo lugar, e a sobra DA KANAMARY fica fora dos 7 bytes e é ignorada](diagramas/03f-update-no-lugar.svg)
+
 ### 3.g. 2o. Update
 ```sh
 # 3.g.1
@@ -1064,11 +1068,9 @@ Output:
 
 > Perceba agora que, em razão do tamanho do nome, o banco de dados realocou o registro para outra posição da página.
 
-As duas atualizações das seções 3.f e 3.g, lado a lado:
+![UPDATE que não cabe: o nome passa a ter mais de 150 bytes. Na página 4, em ordem física, estão os registros 10, o 11 excluído, o 1001 antigo, o 1002, até o 1007, e depois o 1001 novo, gravado no fim da área ocupada, seguido do espaço livre; o registro antigo vai para a lista de espaço livre da página, com os bytes ainda lá; a ordem por id continua 10, 1001, 1002, porque o ponteiro de próximo registro dá a volta](diagramas/03g-update-realocado.svg)
 
-![À esquerda, o UPDATE que cabe no lugar: o nome MARIVALDA KANAMARY, de 18 bytes, vira MARI K., de 7; o tamanho passa de 0x12 para 0x07, o registro continua no mesmo lugar, e a sobra DA KANAMARY fica fora dos 7 bytes e é ignorada. Abaixo, o UPDATE que não cabe: o nome passa a ter mais de 150 bytes; o registro antigo vai para a lista de espaço livre da página, e o novo é gravado no fim da área ocupada, depois do registro 1007; a ordem por id continua 10, 1001, 1002, porque o ponteiro de próximo registro dá a volta](diagramas/03g-update-no-lugar-x-realocado.svg)
-
-Quando o valor novo cabe no espaço do antigo, o InnoDB atualiza no lugar. Quando não cabe, grava o registro inteiro em outra posição e acerta os ponteiros, de modo que a ordem por chave primária continua a mesma. É a natureza rowstore de novo: o registro é uma unidade, e quando ele cresce, vai inteiro para outro lugar.
+Quando o valor novo cabe no espaço do antigo, o InnoDB atualiza no lugar, como na seção 3.f. Quando não cabe, grava o registro inteiro em outra posição e acerta os ponteiros, de modo que a ordem por chave primária continua a mesma. É a natureza rowstore de novo: o registro é uma unidade, e quando ele cresce, vai inteiro para outro lugar.
 
 ## Parabéns!
 

@@ -14,9 +14,11 @@ Os logos dos bancos de dados ficam à parte, em [`../images/logos`](../images/lo
 | `01a-tabela-cliente` | 1.a |
 | `01b1-quem-conversa-com-quem` | 1.b |
 | `01b2-descendo-os-niveis` | 1.b |
-| `01c-linha-x-coluna` | 1.c |
+| `01c1-consulta-pontual` | 1.c |
+| `01c2-consulta-analitica` | 1.c |
 | `01d-oltp-x-olap` | 1.d |
 | `01e-arquitetura` | 1.e |
 | `03b-registro-byte-a-byte` | 3.b |
 | `03e-delete-marca` | 3.e |
-| `03g-update-no-lugar-x-realocado` | 3.f e 3.g |
+| `03f-update-no-lugar` | 3.f |
+| `03g-update-realocado` | 3.g |
